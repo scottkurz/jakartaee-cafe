@@ -12,7 +12,6 @@
 
   <webApplication location="jakarta-cafe.war" contextRoot="/"/>
   <mpMetrics authentication="false"/>
-  <logging traceSpecification="com.ibm.ws.microprofile.health.*=all"/>
 
   <httpEndpoint host="*" httpPort="${default.http.port}"
     httpsPort="${default.https.port}" id="defaultHttpEndpoint"/>
@@ -28,4 +27,10 @@
     <properties.derby.embedded databaseName="jakartaee-cafe-data" createDatabase="create"/>
   </dataSource>
 
+  <dataSource jndiName="jdbc/nt" transactional="false">
+    <jdbcDriver libraryRef="derbyJDBCLib" />
+    <properties.derby.embedded databaseName="jakartaee-cafe-data" createDatabase="create"/>
+  </dataSource>
+
+  <logging  traceSpecification="JPA=all:eclipselink=all:org.eclipse.jakarta.cafe.model.CafeRepository=all" maxFileSize="200" maxFiles="10" />
 </server>
