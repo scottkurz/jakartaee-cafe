@@ -35,14 +35,14 @@
     <arquillian-liberty.version>1.0.8</arquillian-liberty.version>
 
     <!-- OpenLiberty server -->
-    <liberty.runtime.version>21.0.0.12</liberty.runtime.version>
+    <liberty.runtime.version>22.0.0.3</liberty.runtime.version>
     <liberty-maven-plugin.version>3.5.1</liberty-maven-plugin.version>
 
     <!-- Apache Derby -->
     <derby.version>10.14.2.0</derby.version>
 
-    <!-- By default, skip tests -->
-    <skipTests>true</skipTests>
+    <!-- By default, run tests -->
+    <skipTests>false</skipTests>
   </properties>
 
   <dependencyManagement>
@@ -66,9 +66,17 @@
   </dependencyManagement>
 
   <dependencies>
+
     <dependency>
       <groupId>jakarta.platform</groupId>
       <artifactId>jakarta.jakartaee-api</artifactId>
+    </dependency>
+
+    <!-- Surprised the platform/web api aggregate JARs don't seem to contain javax.servlet.LocalStrings !!! -->
+    <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <version>4.0.3</version>
     </dependency>
 
     <dependency>
@@ -79,15 +87,22 @@
     </dependency>
 
     <dependency>
-      <groupId>org.jboss.arquillian.junit</groupId>
-      <artifactId>arquillian-junit-container</artifactId>
-      <scope>test</scope>
+        <groupId>org.jboss.resteasy</groupId>
+        <artifactId>resteasy-client</artifactId>
+        <version>4.7.0.Final</version>
+        <scope>test</scope>
     </dependency>
-
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <scope>test</scope>
+        <groupId>org.jboss.resteasy</groupId>
+        <artifactId>resteasy-json-binding-provider</artifactId>
+        <version>4.7.0.Final</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.eclipse</groupId>
+        <artifactId>yasson</artifactId>
+        <version>1.0.3</version>
+        <scope>test</scope>
     </dependency>
 
     <dependency>
@@ -97,11 +112,6 @@
       <scope>provided</scope>
     </dependency>
 
-    <dependency>
-      <groupId>org.jboss.shrinkwrap</groupId>
-      <artifactId>shrinkwrap-api</artifactId>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>
@@ -159,6 +169,9 @@
               <goal>verify</goal>
             </goals>
             <configuration>
+              <systemPropertyVariables>
+                  <http.port>9080</http.port>
+              </systemPropertyVariables>
               <trimStackTrace>false</trimStackTrace>
               <includes>
                 <include>**/it/**</include>
@@ -179,33 +192,6 @@
       <id>liberty</id>
       <build>
         <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <version>${maven-dependency-plugin.version}</version>
-            <executions>
-              <execution>
-                <id>copy</id>
-                <phase>process-resources</phase>
-                <goals>
-                  <goal>copy</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>org.apache.derby</groupId>
-                  <artifactId>derby</artifactId>
-                  <version>${derby.version}</version>
-                  <type>jar</type>
-                  <overWrite>false</overWrite>
-                </artifactItem>
-              </artifactItems>
-              <outputDirectory>${project.build.directory}/liberty/wlp/usr/shared/resources
-              </outputDirectory>
-            </configuration>
-          </plugin>
           <!-- Enable liberty-maven-plugin -->
           <plugin>
             <groupId>io.openliberty.tools</groupId>
@@ -219,116 +205,6 @@
                   <artifactId>derby</artifactId>
                 </dependency>
               </copyDependencies>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <profile>
-      <!-- Run with: mvn clean verify -Parq-liberty-managed -->
-      <id>arq-liberty-managed</id>
-      <properties>
-        <skipTests>false</skipTests>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>io.openliberty.arquillian</groupId>
-          <artifactId>arquillian-liberty-managed</artifactId>
-          <version>${arquillian-liberty.version}</version>
-        </dependency>
-      </dependencies>
-      <build>
-        <testResources>
-          <testResource>
-            <directory>src/test/arq-liberty-managed</directory>
-            <includes>
-              <include>*</include>
-            </includes>
-            <excludes>
-              <exclude>server.xml</exclude>
-            </excludes>
-          </testResource>
-          <testResource>
-            <directory>src/test/arq-liberty-managed</directory>
-            <includes>
-              <include>server.xml</include>
-            </includes>
-            <targetPath>
-              ${project.build.directory}/wlp/usr/servers/defaultServer
-            </targetPath>
-          </testResource>
-        </testResources>
-
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <version>${maven-dependency-plugin.version}</version>
-            <executions>
-              <execution>
-                <id>copy</id>
-                <phase>process-test-resources</phase>
-                <goals>
-                  <goal>copy</goal>
-                </goals>
-                <configuration>
-                  <artifactItems>
-                    <artifactItem>
-                      <groupId>org.apache.derby</groupId>
-                      <artifactId>derby</artifactId>
-                      <version>${derby.version}</version>
-                      <type>jar</type>
-                      <overWrite>false</overWrite>
-                    </artifactItem>
-                  </artifactItems>
-                  <outputDirectory>${project.build.directory}/wlp/usr/shared/resources
-                  </outputDirectory>
-                </configuration>
-              </execution>
-              <execution>
-                <id>unpack</id>
-                <phase>pre-integration-test</phase>
-                <goals>
-                  <goal>unpack</goal>
-                </goals>
-                <configuration>
-                  <artifactItems>
-                    <artifactItem>
-                      <groupId>io.openliberty</groupId>
-                      <artifactId>openliberty-runtime</artifactId>
-                      <version>${liberty.runtime.version}</version>
-                      <type>zip</type>
-                      <overWrite>false</overWrite>
-                      <outputDirectory>${project.build.directory}</outputDirectory>
-                    </artifactItem>
-                    <artifactItem>
-                      <groupId>io.openliberty.arquillian</groupId>
-                      <artifactId>arquillian-liberty-support</artifactId>
-                      <version>${arquillian-liberty.version}</version>
-                      <type>zip</type>
-                      <classifier>feature</classifier>
-                      <overWrite>false</overWrite>
-                      <outputDirectory>${project.build.directory}/wlp/usr</outputDirectory>
-                    </artifactItem>
-                  </artifactItems>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <artifactId>maven-failsafe-plugin</artifactId>
-            <version>${maven-failsafe-plugin.version}</version>
-            <configuration>
-              <environmentVariables>
-                <WLP_HOME>${project.build.directory}/wlp</WLP_HOME>
-              </environmentVariables>
-              <systemPropertyVariables>
-                <arquillian.launch>liberty-managed</arquillian.launch>
-                <java.util.logging.config.file>
-                  ${project.build.testOutputDirectory}/logging.properties
-                </java.util.logging.config.file>
-              </systemPropertyVariables>
             </configuration>
           </plugin>
         </plugins>
