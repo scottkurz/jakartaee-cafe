@@ -197,6 +197,44 @@
             <groupId>io.openliberty.tools</groupId>
             <artifactId>liberty-maven-plugin</artifactId>
             <version>${liberty-maven-plugin.version}</version>
+            <executions>
+                <execution>
+                    <id>stop-before-clean</id>
+                    <phase>pre-clean</phase>
+                    <goals>
+                        <goal>stop</goal>
+                    </goals>
+                </execution>
+                <execution>
+                    <id>prepare</id>
+                    <phase>prepare-package</phase>
+                    <goals>
+                        <goal>create</goal>
+                        <goal>install-feature</goal>
+                    </goals>
+                </execution>
+                <execution>
+                    <id>install-apps</id>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>deploy</goal>
+                    </goals>
+                </execution>
+                <execution>
+                    <id>test-start</id>
+                    <phase>pre-integration-test</phase>
+                    <goals>
+                        <goal>test-start</goal>
+                    </goals>
+                </execution>
+                <execution>
+                    <id>test-stop</id>
+                    <phase>post-integration-test</phase>
+                    <goals>
+                        <goal>test-stop</goal>
+                    </goals>
+                </execution>
+            </executions>
             <configuration>
               <copyDependencies>
                 <location>${project.build.directory}/liberty/wlp/usr/shared/resources</location>
