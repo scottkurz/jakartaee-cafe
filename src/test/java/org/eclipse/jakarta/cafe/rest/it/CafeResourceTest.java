@@ -1,9 +1,5 @@
 package org.eclipse.jakarta.cafe.rest.it;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -12,13 +8,12 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
-import org.eclipse.jakarta.cafe.JaxrsActivator;
-import org.eclipse.jakarta.cafe.model.CafeRepository;
+
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
+
 import org.eclipse.jakarta.cafe.model.entity.Coffee;
-import org.eclipse.jakarta.cafe.rest.CafeResource;
-
-import org.junit.Test;
-
 
 public class CafeResourceTest {
 
